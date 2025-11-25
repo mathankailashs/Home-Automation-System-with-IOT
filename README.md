@@ -1,18 +1,20 @@
+# Name : Mathan Kailash S
+# Reg no : 212223060156
 # Home-Automation-System-with-IOT
 
 # AIM: 
   To make a Lamp at home (230 V AC) On / Off using ESP8266, IFTT Google Assistance and Blynk IoT mobile application.          
            
 # COMPONENTS REQUIRED:
-PC with Internet connection
-Micro USB cable
-Wifi connection for ESP8266 (Use any mobile hotspot or Router)
-	ESP8266 Board
-	Mobile Phone with Blynk App installed
-            IFTT for Google Voice Assistance
-	9 W Bulb and Relay control
-Arduino software 
-Jumper Wires
+* PC with Internet connection
+* Micro USB cable
+* Wifi connection for ESP8266 (Use any mobile hotspot or Router)
+* ESP8266 Board
+* Mobile Phone with Blynk App installed
+* IFTT for Google Voice Assistance
+* 9 W Bulb and Relay control
+* Arduino software 
+* Jumper Wires
 
 ## Theory: 
 Blynk is an IoT platform for iOS or Android smartphones that is used to control Arduino, Raspberry Pi and NodeMCU via the Internet. This application is used to create a graphical interface or human machine interface (HMI) by compiling and providing the appropriate address on the available widgets.In this experiment we use ESP8266 to control a 220-volt lamp from a web server. But you can also use the same procedure to control fans, lights, AC, or other electrical devices that you want to control remotely.
@@ -44,14 +46,104 @@ When we apply an active high signal to the signal pin of the relay module from a
 
  
 # PROGRAM:
+~~~
+#include <Servo.h>
+#include <LiquidCrystal.h>
+
+LiquidCrystal lcd(A1,10,9,6,5,3);
+float value;
+int tmp = A0;
+const int pingPin = 7;
+int servoPin = 8;
+
+Servo servo1;
+
+void setup() {
+  Serial.begin(9600);
+  servo1.attach(servoPin);
+  lcd.begin(16, 2);
+
+  pinMode(2, INPUT);    // PIR sensor
+  pinMode(4, OUTPUT);   // PIR LED
+  pinMode(11, OUTPUT);  // General LED
+  pinMode(12, OUTPUT);  // Temp HIGH LED
+  pinMode(13, OUTPUT);  // Temp LOW LED
+  pinMode(A0, INPUT);   // Temperature sensor
+}
+
+void loop() {
+  long duration, cm;
+
+  // Ultrasonic
+  pinMode(pingPin, OUTPUT);
+  digitalWrite(pingPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(pingPin, HIGH);
+  delayMicroseconds(5);
+  digitalWrite(pingPin, LOW);
+
+  pinMode(pingPin, INPUT);
+  duration = pulseIn(pingPin, HIGH);
+  cm = microsecondsToCentimeters(duration);
+
+  if(cm < 40) {
+    servo1.write(90);
+    lcd.setCursor(0,1);
+    lcd.print("Door:OPEN   ");
+  } else {
+    servo1.write(0);
+    lcd.setCursor(0,1);
+    lcd.print("Door:CLOSED ");
+  }
+
+  // PIR sensor LED
+  int pir = digitalRead(2);
+  if(pir == HIGH) {
+    digitalWrite(4, HIGH);
+    lcd.setCursor(10,0);
+    lcd.print("LED:ON ");
+  } else {
+    digitalWrite(4, LOW);
+    lcd.setCursor(10,0);
+    lcd.print("LED:OFF");
+  }
+
+  // Temperature
+  value = analogRead(tmp) * 0.004882814;
+  value = (value - 0.5) * 100.0;
+  lcd.setCursor(0,0);
+  lcd.print("Tmp:");
+  lcd.print(value);
+
+  Serial.print("temperature: ");
+  Serial.println(value);
+
+  if(value > 20) {
+    digitalWrite(12, HIGH);  // Hot LED ON
+    digitalWrite(13, LOW);
+  } else {
+    digitalWrite(12, LOW);
+    digitalWrite(13, HIGH);  // Cold LED ON
+  }
+
+  delay(500);
+}
+
+long microsecondsToCentimeters(long microseconds) {
+  return microseconds / 29 / 2;
+}
+~~~
 
 
  
 # Output:
+<img width="758" height="408" alt="image" src="https://github.com/user-attachments/assets/065d2216-ae60-4029-8a84-0964f451713b" />
+
 
 
 
 ## Result:
+Thus the 230V bulb at home is remotely controlled by the Google voice assistance.
 
 
 
